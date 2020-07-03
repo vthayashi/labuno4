@@ -1,0 +1,344 @@
+<html>
+<script>
+var vref=5;
+var ar_map=[0,1,2,3,4,5];
+var dr_map=new Array();
+
+function iniciar(){
+	graf_ini();
+	sto=setInterval(load,500);
+}
+</script>
+
+<body onload="iniciar()">
+<!--Canvas -->
+<canvas id="layer0" style="margin:0;position: absolute; z-index: 1;border:none;background-color:black;"></canvas>
+<canvas id="layer1" style="margin:0;position: absolute; z-index: 2;border:none;"></canvas>
+<canvas id="layer2" style="margin:0;position: absolute; z-index: 3;border:none;"></canvas>
+<canvas id="layer3" style="margin:0;position: absolute; z-index: 4;border:none;"></canvas>
+<canvas id="layer4" style="margin:0;position: absolute; z-index: 5;border:none;"></canvas>
+<script>
+var g_wid=540, g_hei=270, g_top=0, g_left=0;
+var g_cor=["#404040","#FF0000","#00FF00","#0000FF","#FFFF00","#FF00FF","#00FFFF"];
+var ctx=new Array();
+for(i=0;i<=4;i++){
+  la=eval("layer"+i);
+  la.style.top=g_top;la.style.left=g_left;
+  la.width=g_wid;la.height=g_hei;
+  var c=document.getElementById("layer"+i);
+  ctx[i]=c.getContext("2d");ctx[i].strokeStyle =g_cor[i];
+}
+
+function graf_ini(){
+	ctx[0].clearRect(0, 0,g_wid, g_hei);
+	fs=g_wid/384*40;
+	ctx[0].fillStyle ="#003000";ctx[0].font = "bold "+fs.toFixed(0)+"px sans-serif";
+	ctx[0].fillText("LabUno 4", g_wid/384*185, g_hei/256*240);
+	ctx[0].beginPath();
+	
+	for(i=0;i<=divs;i++){
+		x=g_hei/divs*i;ctx[0].moveTo(0,x); ctx[0].lineTo(g_wid,x);
+		if(divs==8 && i%2==0){
+			ctx[0].moveTo(0,x-1); ctx[0].lineTo(g_wid,x-1);
+			ctx[0].moveTo(0,x+1); ctx[0].lineTo(g_wid,x+1);
+		}
+	}
+	
+	for(i=0;i<=20;i++){y=g_wid/20*i;ctx[0].moveTo(y,0); ctx[0].lineTo(y,g_hei);}
+	ctx[0].stroke();
+	fs=g_wid/384*20;ctx[0].fillStyle ="#606060";ctx[0].font = ""+fs.toFixed(0)+"px Verdana";
+	sc=w_usd*w_size/1000/20;
+	vpdiv=vref/10;
+	if(divs==8)vpdiv=vref/2;
+	ctx[0].fillText(vpdiv.toFixed(2)+"V/div "+sc.toFixed(1)+"ms/div", 6, fs+2);
+}
+
+var vpp=[0,0,0,0];
+
+function graf(xx,wa){
+	xx++;
+	ctx[xx].clearRect(0, 0,g_wid, g_hei);
+	var p_x=0, py=0;
+	for(i in wa){
+		x=g_hei-(wa[i]/1023*g_hei);
+		if(divs==8) x=g_hei-(wa[i]/1023*g_hei/4)-(xx-1)*(g_hei/4);
+		y=i*g_wid/(w_size-1);
+		if(i>0){
+			ctx[xx].beginPath();
+			ctx[xx].moveTo(p_y, p_x ); ctx[xx].lineTo(y, x );
+			ctx[xx].moveTo(p_y, p_x+1 ); ctx[xx].lineTo(y, x+1 );
+			ctx[xx].stroke();
+		}
+		p_x=x; p_y=y;
+	}
+	//
+	min=1023; max=0;
+	t=0; st=1; prev_st=1;
+	v_trigger=tri_level.value;
+	v_trigger++;v_trigger--;
+	v_trigger=v_trigger/vref*1023;
+	for(i in wa){
+		if(wa[i]<min) min=wa[i];
+		if(wa[i]>max) max=wa[i];
+		if(i>5){
+			if(wa[i]>v_trigger) st=1;
+			if(wa[i]<v_trigger) st=0;
+		}
+		if((prev_st==0)&&(st==1)&&(t==0)) t=i;
+		prev_st=st;
+	}
+	xx--;
+	vpp[xx]=(max-min)/1023*vref;
+	eval("vpp"+xx).innerHTML=vpp[xx].toFixed(2)+"Vpp";
+	if(xx==0){
+		t*=(w_usd/1000);
+		ms2.innerHTML=t.toFixed(1)+"ms";
+		if(t>0){f=1/t*1000;ms1.innerHTML=f.toFixed(0)+"Hz";}else{ms1.innerHTML="---";}
+	}
+}
+
+function graf_clr(xx){ctx[xx].clearRect(0, 0, g_wid, g_hei);}
+
+</script>
+<!--Canvas -->
+
+<!-- ms/div -->
+<div style="position:absolute;left:0;top:0;z-index:100;border:none;cursor:hand;">
+	<table border="0"><tr>
+		<td width="140" height="40" onclick="divs_fn();"></td>
+		<td width="160" height="40" onclick="msd_fn();"></td>
+	</tr></table>
+</div>
+<script>
+	var msd=1;
+	function msd_fn(){
+		if(msd==1) {msd=2;w_usd=200;w_size=200;}
+		else if(msd==2) {msd=5;w_usd=500;w_size=200;}
+		else if(msd==5) {msd=1;w_usd=200;w_size=100;}
+		graf_ini();
+	}
+	divs=10;
+	function divs_fn(){
+		if(divs==10)divs=8; else divs=10;
+		graf_ini();
+	}
+</script>
+<!-- ms/div -->
+
+<!-- Osciloscopio -->
+
+<div style="padding:4px 0 2px 0;top:270;left:0;width:540px;position:absolute;background-color:black;">
+<style>
+.vpps  {font-family:arial;width:72px;border:solid 1px black;border-radius:4px;font-weight:bold;text-align:center;font-size:14px;background-color:black;}
+.sel_ch{font-family:arial;width:72px;padding:1px 0 1px 18px;font-size:14px;border:solid 1px gray;border-radius:4px;background-color:black;font-weight:bold;}
+input[type=number]::-webkit-inner-spin-button {opacity: 1;height:20px;}
+</style>
+<table cellpadding="0" cellspacing="2" align="center">
+	<tr>
+		<td id="vpp0" class="vpps">&nbsp;</td>
+		<td id="vpp1" class="vpps"></td>
+		<td id="vpp2" class="vpps"></td>
+		<td id="vpp3" class="vpps"></td>
+		<td id="ms2" style="font-family:arial;font-size:14px;font-weight:bold;width:59px;border:none;color:silver;">0000Hz</td>
+		<td id="ms1" style="font-family:arial;font-size:14px;font-weight:bold;width:59px;border:none;color:silver;">000.0ms</td>
+	</tr>
+	<tr>
+		<td><select class="sel_ch" id="ch0port" onchange="clr(1,this.value);"><option value="-1">--</option>
+		<option value="0" selected>A0</option><option value="1">A1</option><option value="2">A2</option>
+		<option value="3">A3</option><option value="4">A4</option><option value="5">A5</option>
+		</select></td>
+		<td><select class="sel_ch" id="ch1port" onchange="clr(2,this.value);"><option value="-1">--</option>
+		<option value="0">A0</option><option value="1" selected>A1</option><option value="2">A2</option>
+		<option value="3">A3</option><option value="4">A4</option><option value="5">A5</option>
+		</select></td>
+		<td><select class="sel_ch" id="ch2port" onchange="clr(3,this.value);"><option value="-1" selected>--</option>
+		<option value="0">A0</option><option value="1">A1</option><option value="2">A2</option>
+		<option value="3">A3</option><option value="4">A4</option><option value="5">A5</option>
+		</select></td>
+		<td><select class="sel_ch" id="ch3port" onchange="clr(4,this.value);"><option value="-1" selected>--</option>
+		<option value="0">A0</option><option value="1">A1</option><option value="2">A2</option>
+		<option value="3">A3</option><option value="4">A4</option><option value="5">A5</option>
+		</select></td>
+		<td><select id="tri_port" title="tri_port" class="sel_ch" style="color:silver;">
+		<option value="0" selected>A0</option><option value="1">A1</option><option value="2">A2</option>
+		<option value="3">A3</option><option value="4">A4</option><option value="5">A5</option>
+		</select>
+		</td>
+		<td><input id="tri_level" title="tri_level" style="text-align:center;padding:2px 0 2px 0;color:silver;" type="number" class="sel_ch" min="0" max="1023" step="1">	</td>
+	</tr>
+</table>
+<script>
+tri_level.max=vref;
+tri_level.step=0.1;
+tri_level.value=vref/2;
+for(i=0;i<=3;i++){
+	eval("vpp"+i).style.color=g_cor[i+1];
+	eval("ch"+i+"port").style.color=g_cor[i+1];
+}
+function clr(xx,yy){
+	if(yy=="-1"){
+		ctx[xx].clearRect(0, 0, g_wid, g_hei);
+		xx--;
+		eval("vpp"+xx).innerHTML="&nbsp;";
+	}
+}
+</script>
+</div>
+<!-- /Osciloscopio -->
+
+<!-- Uno -->
+<img src="LabUno4.jpg" style="top:323px;left:16px;width:200px;position:absolute;">
+
+<style>
+.led{margin:0 0 2px 0;background-color:gray;width:8px;height:7px;}
+</style>
+<table cellspacing="0" cellpadding="0" style="top:466px;left:205px;position:absolute;">
+	<tr><td><div id="ledD13" class="led"></div></td></tr>
+	<tr><td><div id="ledD12" class="led"></div></td></tr>
+	<tr><td><div id="ledD11" class="led"></div></td></tr>
+	<tr><td><div id="ledD10" class="led"></div></td></tr>
+	<tr><td><div id="ledD9" class="led"></div></td></tr>
+	<tr><td><div id="ledD8" class="led"></div></td></tr>
+</table>
+<table cellspacing="0" cellpadding="0" style="top:528px;left:205px;position:absolute;">
+	<tr><td><div id="ledD7" class="led"></div></td></tr>
+	<tr><td><div id="ledD6" class="led"></div></td></tr>
+	<tr><td><div id="ledD5" class="led"></div></td></tr>
+	<tr><td><div id="ledD4" class="led"></div></td></tr>
+	<tr><td><div id="ledD3" class="led"></div></td></tr>
+	<tr><td><div id="ledD2" class="led"></div></td></tr>
+</table>
+<!-- Uno -->
+
+<!-- Comando -->
+<form onsubmit="req_fun(); return false;">
+<div style="top:325px;width:310;left:228px;text-align:center;border:solid 1px silver;position:absolute;padding:0;">
+<style>td{text-align:center;}
+</style>
+  <table height="36" align="center" cellspacing="1" cellpadding="0"><tr>
+  <td colspan="2"><label style="font-size:14px;">Comando</label></td>
+  <td><input id="req_txt" type="text" style="width:140;text-align:center;height:30px;font-size:14px;margin:2;border:solid 1px silver;border-radius:28px;"></td>
+  <td><input type="submit" value=">" style="align:center;height:30px;border-radius:30px;width:50px;margin-left:2px;border:solid 1px silver;background-color:white;"></td>
+</tr></table>
+<table align="left">
+<tr width="14"><td>dr</td>
+<td><input id="dr_inp" type="text" value="2,3,4,5,6,7,8,9,10,11,12,13" style="width:280px;"></td></tr>
+<tr><td width="14"><input id="run" type="checkbox" checked></td>
+<td><textarea id="div01" type="text" style="width:280px;"></textarea></td></tr>
+<tr><td colspan="2"><textarea id="div02" type="text" style="width:304px;height:180px;"></textarea></td></tr>
+</table>
+</div>
+</form>
+<script>
+var ser="", ser2="";
+function req_fun(){
+	sa=req_txt.value;
+	if(sa.indexOf("tr=")==0){
+		ia=sa.substring(3); ia++;ia--;
+		v_trigger=ia;
+	}else{
+		ser+="&"+req_txt.value;
+	}
+}
+</script>
+<!-- /Comando -->
+
+
+<!-- Voltimetro -->
+<div style="top:490px;left:54px;text-align:center;border:none;position:absolute;padding:0;">
+<style>.vo_td{padding:0 4px 0 0;width:44px;text-align:right;color:#FF00FF;background-color:black;border-radius:4px;}</style>
+<table cellspacing="1">
+<tr><td id="v0" class="vo_td">5.00V</td></tr>
+<tr><td id="v1" class="vo_td">5.00V</td></tr>
+<tr><td id="v2" class="vo_td">5.00V</td></tr>
+<tr><td id="v3" class="vo_td">5.00V</td></tr>
+<tr><td id="v4" class="vo_td">5.00V</td></tr>
+<tr><td id="v5" class="vo_td">5.00V</td></tr>
+</table>
+</div>
+<!-- /Voltimetro -->
+
+<script>
+var w_chn=-1; // 0 a 5
+var w_usd=200; // min=200
+var w_size=100;
+var w_map=[0,1,2];
+
+function load(){
+	//
+	dr_map=new Array();
+	sa=dr_inp.value+",";
+	while(sa.indexOf(",")>=0){
+		sb=sa.substring(0,sa.indexOf(",")); sa=sa.substring(sa.indexOf(",")+1);
+		if(sb!=""){sb++;sb--;dr_map[dr_map.length]=sb;}
+	}
+	//
+	sa=ser; ser=ser2; ser2="";
+	if(run.checked){
+		for(i in ar_map){
+			if(i==0) sa+="&ar="; else sa+=",";
+			sa+=ar_map[i];
+		}
+		for(i in dr_map){
+			if(i==0) sa+="&dr="; else sa+=",";
+			sa+=dr_map[i];
+		}
+	}
+	//
+	w_map[0]=ch0port.value;	w_map[1]=ch1port.value;
+	w_map[2]=ch2port.value;	w_map[3]=ch3port.value;
+	w_chn++;
+	if(w_chn==0 && ch0port.value=="-1"){ w_chn++; }
+	if(w_chn==1 && ch1port.value=="-1"){ w_chn++; }
+	if(w_chn==2 && ch2port.value=="-1"){ w_chn++; }
+	if(w_chn==3 && ch3port.value=="-1"){ w_chn++; }
+	if(w_chn>3){
+		w_chn=-1;
+		if(ch0port.value!="-1") w_chn=0;
+		else if(ch1port.value!="-1") w_chn=1;
+		else if(ch2port.value!="-1") w_chn=2;
+		else if(ch3port.value!="-1") w_chn=3;
+	}
+	//
+	if(w_chn>=0){
+		tri=tri_level.value;tri++;tri--;tri=tri*1023/vref;
+		sa+="&w="+w_map[w_chn]+","+tri+","+w_usd+","+w_size+","+tri_port.value;
+	}
+	if(sa.length>0 && run.checked){
+		client.open('GET', "js?"+sa, true);
+		client.timeout = 10000;
+		client.send();
+		div01.value=sa;
+	}
+}
+var client=new XMLHttpRequest();
+client.onreadystatechange=function(){
+	if((this.readyState==4) && (this.status==200)){
+		myObj=JSON.parse(this.responseText);
+		div02.value="";
+		if(typeof myObj.dr!='undefined'){
+			div02.value+="dr = "+myObj.dr+"\n";
+			for(i=2;i<=13;i++){eval("ledD"+i).style.backgroundColor="gray";}
+			for(i in myObj.dr){
+				led=eval("ledD"+dr_map[i]);
+				if(myObj.dr[i]==1) led.style.backgroundColor="red";
+				else led.style.backgroundColor="blue";
+			}
+		}
+		if(typeof myObj.ar!='undefined'){
+			div02.value+="ar = "+myObj.ar+"\n";
+			for(i in myObj.ar){
+				v=myObj.ar[i]/1023*vref;
+				eval("v"+i).innerHTML=v.toFixed(2)+"V";}
+		}
+		if(typeof myObj.w!='undefined'){
+			graf(w_chn,myObj.w);
+			div02.value+="w = ";
+			for(i in myObj.w) div02.value+=myObj.w[i]+" ";
+		}
+	}
+}
+</script>
+
+</body>
+</html>
