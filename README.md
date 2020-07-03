@@ -1,5 +1,7 @@
 # labuno4
-Open Source Oscilloscope built with Flask, pyserial and Arduino Uno (also HTML and a bit of javascript)
+Open Source Oscilloscope built with Flask, pyserial, HTML, javascript and Arduino Uno.
+
+<img src="https://github.com/vthayashi/labuno4/blob/master/imgREADME.png" alt="LabUno Desktop interface" width="800"/>
 
 ## Built With
 
