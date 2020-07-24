@@ -30,7 +30,9 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ## FAQ
 
 * Change USB port to corresponding port where your Arduino device is connected, on app.py:
+
 ser = serial.Serial(**'COM7'**, baudrate=500000, timeout=10)
 
 * If you are on Linux (Ubuntu 16.04 LTS), comment the line below on app.py:
+
 ser.set_buffer_size(rx_size = 25600, tx_size = 12800)
