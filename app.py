@@ -1,13 +1,16 @@
 # python app.py
 # https://github.com/arshadansari27/flask-image-server/blob/master/app.py
-#http://zetcode.com/python/flask/
+# http://zetcode.com/python/flask/
 
 import serial
 
 from flask import Flask, send_file
 from flask import request
 
+# ATENÇÃO: Trocar a porta serial para a porta serial onde o Arduino está conectado
 ser = serial.Serial('COM7', baudrate=500000, timeout=10)
+
+# ATENÇÃO: Comentar a linha se estiver no Linux (Ubuntu 16.04 LTS)
 ser.set_buffer_size(rx_size = 25600, tx_size = 12800)
 
 app = Flask(__name__)
